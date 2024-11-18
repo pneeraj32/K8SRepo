@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: #
-  labels: 
-    app: #
+  name: flask-deployment
+  labels:
+    app: flask
 spec:
-  replicas: #
+  replicas: 10
   selector:
     matchLabels:
-      app: #
+      app: flask
   template:
     metadata:
       labels:
-        app: #
+        app: flask
     spec:
       containers:
-      - name: #
-        image: #
-        ports:
-        - containerPort: #
+        - name: flask-container
+          image: stractcastor/duo-deploy-flask:latest
+          ports:
+            - containerPort: 5500
