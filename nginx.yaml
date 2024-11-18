@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: nginx
   labels:
-  app: nginx
+    app: nginx
 spec:
   containers:
     - name: nginx-container
@@ -17,8 +17,8 @@ metadata:
   name: nginx-service
 spec:
   type: LoadBalancer
-selector:
-  app: nginx
+  selector:
+    app: nginx
   ports:
     - protocol: TCP
       port: 80
