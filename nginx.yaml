@@ -1,36 +1,7 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-  labels:
-    app: nginx
-spec:
-  replicas: 10
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      volumes:
-        - name: nginx-volume
-          configMap:
-            name: nginx-data
-      containers:
-      - name: nginx-container
-        image: nginx:latest
-        ports:
-        - containerPort: 80 
-        volumeMounts:
-        - name: nginx-volume
-          mountPath: /etc/nginx
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-data
+  name: nginx-config
 data:
   nginx.conf: |
     events {}
@@ -41,10 +12,47 @@ data:
           return 200 "OK Default Path";
         }
         location /hello {
-return 200 "Hello World";
+          return 200 "Hello World";
         }
+        location /Brazil {
+          return 200 "Bad at football";
+        }
+      }
     }
-  }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    rollingUpdate:
+      maxSurge: 10%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+        - name: nginx-volume
+          configMap:
+            name: nginx-config
+      containers:
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-volume
+              mountPath: /etc/nginx/
 ---
 apiVersion: v1
 kind: Service
@@ -55,6 +63,6 @@ spec:
   selector:
     app: nginx
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    - protocol: TCP
+      port: 80
+      targetPort: 80
