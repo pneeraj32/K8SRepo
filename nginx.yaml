@@ -1,15 +1,50 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: nginx
   labels:
     app: nginx
 spec:
-  containers:
-    - name: nginx-container
-      image: nginx:latest
-      ports:
-        - containerPort: 80
+  replicas: 10
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+        - name: nginx-volume
+          configMap:
+            name: nginx-data
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80 
+        volumeMounts:
+        - name: nginx-volume
+          mountPath: /etc/nginx
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-data
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 80;
+        location / {
+          return 200 "OK Default Path";
+        }
+        location /hello {
+return 200 "Hello World";
+        }
+    }
+  }
 ---
 apiVersion: v1
 kind: Service
@@ -20,6 +55,6 @@ spec:
   selector:
     app: nginx
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+  - protocol: TCP
+    port: 80
+    targetPort: 80
